@@ -10,13 +10,13 @@ This Repository provides a U-Boot Image for ZYBO-Z7.
 
 ### Features
 
-* U-Boot v2017.11 (customized)
+* U-Boot v2016.03 (customized)
   + Build for ZYBO-Z7
   + Customized boot by uEnv.txt
   + Customized boot by boot.scr
   + Enable bootmenu
 
-Build U-boot for DE10-Nano
+Build U-boot for ZYBO-Z7
 ------------------------------------------------------------------------------------
 
 There are two ways
@@ -32,14 +32,14 @@ There are two ways
 shell$ git clone git://git.denx.de/u-boot.git u-boot-2016.03-zynq-zybo-z7
 ```
 
-#### Checkout v2017.11
+#### Checkout v2016.03
 
 ```console
 shell$ cd u-boot-2016.03-zynq-zybo-z7
 shell$ git checkout -b u-boot-2016.03-zynq-zybo-z7 refs/tags/v2016.03
 ```
 
-### Patch for de10-nano
+### Patch for zynq-zybo-z7
 
 ```console
 shell$ patch -p0 < ../files/u-boot-2016.03-zynq-zybo-z7.diff
