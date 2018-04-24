@@ -10,7 +10,7 @@ This Repository provides a U-Boot Image for ZYBO-Z7.
 
 ### Features
 
-* U-Boot v2016.03 (customized)
+* U-Boot v2017.11 (customized)
   + Build for ZYBO-Z7
   + Customized boot by uEnv.txt
   + Customized boot by boot.scr
@@ -21,7 +21,7 @@ Build U-boot for ZYBO-Z7
 
 There are two ways
 
-1. run scripts/build-u-boot-2016.03-zynq-zybo-z7.sh (easy)
+1. run scripts/build-u-boot-2017.11-zynq-zybo-z7.sh (easy)
 2. run this chapter step-by-step (annoying)
 
 ### Download U-boot Source
@@ -29,29 +29,48 @@ There are two ways
 #### Clone from git.denx.de/u-boot.git
 
 ```console
-shell$ git clone git://git.denx.de/u-boot.git u-boot-2016.03-zynq-zybo-z7
+shell$ git clone git://git.denx.de/u-boot.git u-boot-2017.11-zynq-zybo-z7
 ```
 
-#### Checkout v2016.03
+#### Checkout v2017.11
 
 ```console
-shell$ cd u-boot-2016.03-zynq-zybo-z7
-shell$ git checkout -b u-boot-2016.03-zynq-zybo-z7 refs/tags/v2016.03
+shell$ cd u-boot-2017.11-zynq-zybo-z7
+shell$ git checkout -b u-boot-2017.11-zynq-zybo-z7 refs/tags/v2017.11
 ```
 
 ### Patch for zynq-zybo-z7
 
 ```console
-shell$ patch -p0 < ../files/u-boot-2016.03-zynq-zybo-z7.diff
+shell$ patch -p1 < ../files/u-boot-2017.11-zynq-preboot.diff
 shell$ git add --update
-shell$ git commit -m "patch for zynq-zybo-z7"
-shell$ git tag -a v2016.03-1-zynq-zybo-z7 -m "Release v2016.03-1 for zynq-zybo-z7"
+shell$ git commit -m "[update] for zynq to import uEnv.txt at PREBOOT and to use bootmenu"
+```
+
+```console
+shell$ patch -p1 < ../files/u-boot-2017.11-zynq-spi-mac-addr.diff
+shell$ git add --update
+shell$ git commit -m "[update] for zynq to read mac address from spi"
+```
+
+```console
+shell$ patch -p1 < ../files/u-boot-2017.11-zynq-zybo-z7.diff
+shell$ git add --update
+shell$ git add arch/arm/dts/zynq-zybo-z7.dts
+shell$ git add board/xilinx/zynq/zynq-zybo-z7/*
+shell$ git add configs/zynq_zybo_z7_defconfig
+shell$ git add include/configs/zynq_zybo_z7.h
+shell$ git commit -m "[patch] for zynq-zybo-z7"
+```
+
+```console
+shell$ git tag -a v2017.11-zynq-zybo-z7-1 -m "Release v2017.11-1 for zynq-zybo-z7"
 ```
 
 ### Setup for Build 
 
 ```console
-shell$ cd u-boot-2016.03-zynq-zybo-z7
+shell$ cd u-boot-2017.11-zynq-zybo-z7
 shell$ export ARCH=arm
 shell$ export CROSS_COMPILE=arm-linux-gnueabihf-
 shell$ make zynq_zybo_z7_defconfig

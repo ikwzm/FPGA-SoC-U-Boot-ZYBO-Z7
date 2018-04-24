@@ -1,0 +1,93 @@
+diff --git a/common/Kconfig b/common/Kconfig
+index f96a25f..124413a 100644
+--- a/common/Kconfig
++++ b/common/Kconfig
+@@ -208,6 +208,11 @@ config MENU
+ 	  This is the library functionality to provide a text-based menu of
+ 	  choices for the user to make choices with.
+ 
++config MENU_SHOW
++	bool "Show Menu before automatically booting"
++	depends on MENU
++	default n
++
+ config CONSOLE_RECORD
+ 	bool "Console recording"
+ 	help
+diff --git a/include/configs/zynq-common.h b/include/configs/zynq-common.h
+index b9599c7..57be94c 100644
+--- a/include/configs/zynq-common.h
++++ b/include/configs/zynq-common.h
+@@ -168,10 +168,26 @@
+ #endif
+ 
+ /* enable preboot to be loaded before CONFIG_BOOTDELAY */
+-#define CONFIG_PREBOOT
++#define CONFIG_PREBOOT \
++	"if test $modeboot = sdboot; then " \
++		"if mmc rescan; then " \
++			"run sd_loadbootenv; " \
++		"fi;" \
++	"fi;"
+ 
+ /* Boot configuration */
+-#define CONFIG_BOOTCOMMAND		"run $modeboot || run distro_bootcmd"
++#define CONFIG_BOOTCOMMAND \
++	"if test -n $uenvcmd; then " \
++		"echo Running uenvcmd ...;" \
++		"run uenvcmd;" \
++	"fi;" \
++	"if mmc rescan; then " \
++		"if run loadbootscript; then " \
++			"run bootscript; " \
++		"fi; " \
++	"fi;" \
++        "run $modeboot || run distro_bootcmd"
++
+ #define CONFIG_SYS_LOAD_ADDR		0 /* default? */
+ 
+ /* Distro boot enablement */
+@@ -230,6 +246,7 @@
+ 	"kernel_addr_r=0x2000000\0"     \
+ 	"scriptaddr=0x3000000\0"        \
+ 	"ramdisk_addr_r=0x3100000\0"    \
++	"config_name=" CONFIG_SYS_CONFIG_NAME "\0" \
+ 	"bootenv=uEnv.txt\0" \
+ 	"bootenv_dev=mmc\0" \
+ 	"loadbootenv=load ${bootenv_dev} 0 ${loadbootenv_addr} ${bootenv}\0" \
+@@ -244,14 +261,6 @@
+ 	"sd_loadbootenv=set bootenv_dev mmc && " \
+ 			"run setbootenv \0" \
+ 	"usb_loadbootenv=set bootenv_dev usb && usb start && run setbootenv \0" \
+-	"preboot=if test $modeboot = sdboot; then " \
+-			"run sd_loadbootenv; " \
+-			"echo Checking if uenvcmd is set ...; " \
+-			"if test -n $uenvcmd; then " \
+-				"echo Running uenvcmd ...; " \
+-				"run uenvcmd; " \
+-			"fi; " \
+-		"fi; \0" \
+ 	"norboot=echo Copying FIT from NOR flash to RAM... && " \
+ 		"cp.b ${nor_flash_off} ${load_addr} ${fit_size} && " \
+ 		"bootm ${load_addr}\0" \
+@@ -265,6 +274,9 @@
+ 			"echo Copying FIT from USB to RAM... && " \
+ 			"load usb 0 ${load_addr} ${fit_image} && " \
+ 			"bootm ${load_addr}; fi\0" \
++        "loadbootscript=load mmc 0 ${load_addr} boot.scr\0" \
++        "bootscript=echo Running bootscript from mmc ...;" \
++                "source ${load_addr}\0" \
+ 		DFU_ALT_INFO \
+ 		BOOTENV
+ #endif
+@@ -361,8 +373,8 @@
+ #define OCM_HIGH_ADDR	0xffff0000
+ 
+ /* On the top of OCM space */
+-#define CONFIG_SYS_SPL_MALLOC_START	OCM_HIGH_ADDR
+-#define CONFIG_SYS_SPL_MALLOC_SIZE	0x2000
++#define CONFIG_SYS_SPL_MALLOC_START	CONFIG_SPL_STACK_R_ADDR
++#define CONFIG_SYS_SPL_MALLOC_SIZE	0x20000000
+ 
+ /*
+  * SPL stack position - and stack goes down
